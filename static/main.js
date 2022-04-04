@@ -4,11 +4,14 @@ var tutorialMsgs = []
 var triggerEnterKeyEvent = true
 var sessionDictData = {}
 var currentClue = {}
+var isPersonFirst = true
+var isRolesFirst = true
+var isHoursFirst = true
 $(document).ready(function () {
     //alert(localStorage.getItem("sessionId"))
 
     //window.onbeforeunload = function (event) {
-    //    return confirm("Confirm refresh");    
+    //    return confirm("Confirm refresh");
     //};
 
     //console.log(window.location.href.split('/').pop())
@@ -19,11 +22,11 @@ $(document).ready(function () {
         window.location.replace(window.location.origin)
     }
     else {
-        
+
         $("#bgStorySetupModal").modal()
         initialDataSetup();
     }
-    
+
     function initialDataSetup() {
         var conditionDict = {
             1: "HHH",
@@ -31,9 +34,9 @@ $(document).ready(function () {
             3: "LHH",
             4: "LLH",
             5: "HHHC",
-            6: "HLL",
+            6: "HHLC",
             7: "NHHC",
-            8: "HHL"
+            8: "NHLC"
         }
         ////console.log(window.location.href.split('/'))
         var condition = window.location.href.split('/').pop()
@@ -45,7 +48,7 @@ $(document).ready(function () {
 
     function onloadSetup() {
         if (!$.trim($('#chatDiv').html()).length) {
-            
+
             $('#topic').val('Introduction');
             $('#index').val('0');
             $('#sessionId').val(localStorage.getItem("sessionId"));
@@ -68,15 +71,15 @@ $(document).ready(function () {
                     $('#sessionId').val(response["sessionId"]);
                     addThinking('bot', response["condition"])
                     var message = response["botResponse"];
-                    
-                    
+
+
                     if (response['condition'][1] == 'H' && response['topic'] == 'Introduction' && response['index'] == "1") {
                         message = message + "<br/>For the next steps, please take your time to read the information I provide you. When you are done, press enter key or click on 'next' button, and I will move on"
 
 
                     }
 
-                    
+
 
                     $("#nextButton").attr("disabled", true);
                     setTimeout(function () {
@@ -93,12 +96,12 @@ $(document).ready(function () {
                 }
             });
 
-         
+
             $("#nextButton").click(function (e) {
                 triggerEnterKeyEvent = false;
                 getDataEvent();
             });
-            
+
             $(document.body).on("click", ".showNextClue", function () {
                 var message = getButtonText('showNextClue')
                 var element = document.getElementById("chatDiv");
@@ -116,22 +119,22 @@ $(document).ready(function () {
                         else {
                             redundantMessage('Status: All available information has been provided', false);
                         }
-                        
+
                     }
                     else {
                         redundantBlock($('#condition').val())
                     }
                 }
 
-                
-                
+
+
             });
-            
+
             //$(document.body).on("click", '.showClueExplanation', function () {
             //    var message = getButtonText('showClueExplanation')
             //    var element = document.getElementById("chatDiv");
             //    element.removeChild(element.childNodes[element.childNodes.length - 1]);
-                
+
             //    addMessage('user', $("#condition").val(), message)
 
             //    redundantMessage(currentClue['explanation'], true, true)
@@ -148,7 +151,7 @@ $(document).ready(function () {
                 getDataEvent();
                 $("#nextButton").attr("disabled", false);
                 $("#nextButton").show()
-                
+
             });
 
 
@@ -161,12 +164,38 @@ $(document).ready(function () {
                 var navItems = []
                 navItems = ["Alex", "Leon", "Rachel", "Tina"]
                 userActionBlock = buildUserActionButtonGroup(navItems, condition, 'person')
-                addActionBlock(userActionBlock)
+                // $('#topic').val('Person')
+                // $('#index').val('0')
+                if (isPersonFirst) {
+                isPersonFirst = false;
+                addMessage('bot', $("#condition").val(), 'Not so fast!');
+                addMessage('bot', $("#condition").val(), 'Knock Knock');
+                addInteractiveMessage('user-btn', "hk1", 'who is there?')
+
+                $(document.body).on("click", ".hk1", function () {
+                    addMessage('bot', $("#condition").val(), 'Déja');
+                    addInteractiveMessage('user-btn', "hk2", 'Déja who?')
+                    $(document.body).on("click", ".hk2", function () {
+                        addMessage('bot', $("#condition").val(), 'Knock Knock');
+                        addMessage('bot', $("#condition").val(), 'Ok, enough comedy. On to more serious matters. ');
+                        addActionBlock(userActionBlock)
+                    });
+
+                });
+                }
+                
 
             });
 
             $(document.body).on('click', '.alex', function (event) {
                 var message = getButtonText('alex')
+                // if (isPersonFirst) {
+                //     isPersonFirst = false;
+                //     getDataEvent();
+                //     $("#nextButton").attr("disabled", false);
+                //     $("#nextButton").show();
+                //     return
+                // }
                 var element = document.getElementById("chatDiv");
                 element.removeChild(element.childNodes[element.childNodes.length - 1]);
                 addMessage('user', $("#condition").val(), message)
@@ -186,7 +215,7 @@ $(document).ready(function () {
                 //    triggerEnterKeyEvent = false;
                 //    getDataEvent();
 
-                    
+
                 //    $("#nextButton").attr("disabled", true);
                 //    $("#nextButton").hide()
                 //}
@@ -233,8 +262,8 @@ $(document).ready(function () {
                         }
                     }
                 }
-                
-                
+
+
             });
 
             $(document.body).on('click', '.leon', function (event) {
@@ -444,9 +473,24 @@ $(document).ready(function () {
                 var navItems = []
                 navItems = ["Network <br /> Architect", "Systems <br /> Analyst", "Cybersecurity <br /> Specialist", "Database <br /> Administrator"]
                 userActionBlock = buildUserActionButtonGroup(navItems, condition, 'roles')
+                if(isRolesFirst){
+                 isRolesFirst = false;
+                addMessage('bot', $("#condition").val(), 'Before I give you a clue, I have a question. ');
+                addInteractiveMessage('user-btn', "hk3", 'Yes?')
+				$(document.body).on("click", ".hk3", function () {
+				
+                addMessage('bot', $("#condition").val(), 'Do you know why the project manager crossed the road? '); 
+                addInteractiveMessage('user-btn', "hk4", 'Why?')
+                    $(document.body).on("click", ".hk4", function () {
+                addMessage('bot', $("#condition").val(), 'Because the client refused to meet her halfway 😃😃😃');
+                addMessage('bot', $("#condition").val(), 'haha – am I not the funniest?  ');
+                
                 addActionBlock(userActionBlock)
             });
+        });
+        }
 
+            });    
             $(document.body).on('click', '.networkArchitect', function (event) {
                 var message = getButtonText('networkArchitect')
                 var element = document.getElementById("chatDiv");
@@ -493,7 +537,7 @@ $(document).ready(function () {
                             ////console.log(sessionDictData)
                             sessionDictData['Network Architect'] = dataList
                             isUsed = true
-                        } 
+                        }
                         else {
                             if (dataList.length != 0) {
                                 var id = dataList.shift()
@@ -721,6 +765,15 @@ $(document).ready(function () {
                 var navItems = []
                 navItems = ["6", "8", "10", "12"]
                 userActionBlock = buildUserActionButtonGroup(navItems, condition, 'hours')
+                if(isHoursFirst) 
+                {
+                    isHoursFirst = false;
+                addMessage('bot', $("#condition").val(), 'Wait a moment – do you have time for a brief diversion?');
+                addMessage('user', $("#condition").val(), 'Yes?')
+                addMessage('bot', $("#condition").val(), 'Do you know why I am your project AI now?  '); 
+                addMessage('user', $("#condition").val(), 'Why?')
+                addMessage('bot', $("#condition").val(), 'because, I was fired from the clock-making factory after all the extra hours I put in. 😢😜');
+                }
                 addActionBlock(userActionBlock)
             });
 
@@ -946,11 +999,11 @@ $(document).ready(function () {
                 //}
                 else {
                     var allList = sessionDictData['All']
-                    
+
                     var id = dataList.shift()
                     var isUsed = false
                     while (!isUsed) {
-                        
+
                         if (allList.indexOf(id) > -1) {
                             $.ajax({
                                 url: '/getRedundantClueById',
@@ -971,7 +1024,7 @@ $(document).ready(function () {
                             ////console.log(sessionDictData)
                             sessionDictData['Twelve'] = dataList
                             isUsed = true
-                            
+
                         }
                         else {
                             if (dataList.length != 0) {
@@ -992,19 +1045,19 @@ $(document).ready(function () {
                 }
             });
 
-            
+
             $(document).keypress(function (e) {
                 if (e.key === 'Enter' && triggerEnterKeyEvent) {
                     triggerEnterKeyEvent = false;
-                    
+
                     getDataEvent();
-                    
+
                 }
             });
 
 
         }
-        
+
         $('#userMessage').keyup(function (e) {
             if (e.key != 'Enter') {
                 if ($("#user_thinking").length < 1) {
@@ -1023,16 +1076,16 @@ $(document).ready(function () {
                 $("#nextButton").attr("disabled", false);
                 istriggerEnterKeyEventActive = true
                 $('#userMessage').css('border-color', '#80bdff');
-                $('#userMessage').css('box - shadow', '0 0 0 0.2rem rgba(0,123,255,.25)');  
+                $('#userMessage').css('box - shadow', '0 0 0 0.2rem rgba(0,123,255,.25)');
             }
             else {
                 $('#userMessage').css('border-color', 'red');
-                $('#userMessage').css('box - shadow', '0 0 0 0.2rem rgba(255,123,0,.25)');  
+                $('#userMessage').css('box - shadow', '0 0 0 0.2rem rgba(255,123,0,.25)');
             }
-            
+
         })
 
-        
+
         gridClick();
         gridSubmit();
 
@@ -1050,7 +1103,7 @@ $(document).ready(function () {
 
     function redundantMessage(message, isRepeat, explanationBlock = false) {
         //Made it false because in new mode there is no explanation block
-        explanationBlock = false 
+        explanationBlock = false
         addThinking('bot', $('#condition').val())
         $("#nextButton").attr("disabled", true);
         setTimeout(function () {
@@ -1090,10 +1143,10 @@ $(document).ready(function () {
 
         $("#nextButton").attr("disabled", false);
 
-        
+
     }
 
-    
+
     function getDataEvent() {
         istriggerEnterKeyEventActive = true
         isTaskCompleted = false
@@ -1143,15 +1196,15 @@ $(document).ready(function () {
 
                             fillHighConditionContent(response, istriggerEnterKeyEventActive, isTaskCompleted);
                         }
-                    
-                    
-                    
+
+
+
                 }, 1000);
                 //////console.log("outside timeout")
                 //$("#nextButton").attr("disabled", false);
 
 
-                
+
             }
         });
     }
@@ -1159,13 +1212,13 @@ $(document).ready(function () {
     function fillLowConditionContent(response, istriggerEnterKeyEventActive, isTaskCompleted) {
         $('#bot_thinking').remove();
         var message = '';
-        
+
         if (response['topic'] == 'Clue') {
             response_dict = response["botResponse"][0]
             var clues = []
             var explanations = []
             for (var key in response_dict) {
-                
+
                 message += '<b>' + key.toString() + '. </b>' + response_dict[key]['clue'];
                 //if (response['condition'][2] == 'H') {
                 //    message += '<b>Explanation: </b>' + response_dict[key]['explanation'] + '<br/>';
@@ -1174,7 +1227,7 @@ $(document).ready(function () {
                 clues.push(response_dict[key]['clue']);
                 //explanations.push(response_dict[key]['explanation']);
 
-                
+
             }
             addMessage('bot', response["condition"], message);
         }
@@ -1252,7 +1305,7 @@ $(document).ready(function () {
             message = '';
         }
         else {
-            
+
             message = response["botResponse"][0];
         }
 
@@ -1262,13 +1315,13 @@ $(document).ready(function () {
 
         //////console.log(message)
         if (response['topic'] == 'Clue') {
-            
+
             var seconds = new Date().getTime() / 1000;
             $('#timeTaken').val(seconds);
         }
         //console.log(response)
         if (response['topic'] == 'Clue' && response['index'] == "0") {
-            
+
             $('#infoClueButton').show()
             var seconds = new Date().getTime() / 1000;
             $('#clueStartTimestamp').val(seconds);
@@ -1278,7 +1331,7 @@ $(document).ready(function () {
             message = message + '<br/><br/>'
             addMessage('bot', response["condition"], message);
             message = getMatrixHtml()
-            
+
         }
 
         if (response['topic'] == 'Submit' && response['index'] == "3") {
@@ -1300,7 +1353,7 @@ $(document).ready(function () {
 
 
 
-        if (($('#condition').val() == 'NHHC' || $('#condition').val() == 'LHH') && response["topic"] == 'Introduction' && response["index"] == "2") {
+        if (($('#condition').val() == 'HHHC' || $('#condition').val() == 'HHLC' || $('#condition').val() == 'HHH' || $('#condition').val() == 'LHH') && response["topic"] == 'Introduction' && response["index"] == "2") {
             $("#userMessage").show();
             $('#userMessage').focus()
             $('#userInputType').val("name")
@@ -1315,12 +1368,15 @@ $(document).ready(function () {
             $("#userMessage").hide();
             $('#userInputType').val("");
         }
-        else if (($('#condition').val() == 'NHHC') && response["topic"] == 'Tutorial' && response["index"] == "13"
-            || ($('#condition').val() == 'LHH') && response["topic"] == 'Tutorial' && response["index"] == "21"
+        else if (($('#condition').val() == 'HHHC') && response["topic"] == 'Tutorial' && response["index"] == "23" ||
+        ($('#condition').val() == 'HHLC') && response["topic"] == 'Tutorial' && response["index"] == "23" ||
+        ($('#condition').val() == 'HHH') && response["topic"] == 'Tutorial' && response["index"] == "21"  ||
+         ($('#condition').val() == 'LHH') && response["topic"] == 'Tutorial' && response["index"] == "21"
             || ($('#condition').val() == 'NHHC') && response["topic"] == 'Conclusion' && response["index"] == "1"
-            || ($('#condition').val() == 'LHH') && response["topic"] == 'Conclusion' && response["index"] == "1") {
+            || ($('#condition').val() == 'LHH') && response["topic"] == 'Conclusion' && response["index"] == "1"
+            || ($('#condition').val() == 'HHLC') && response["topic"] == 'Conclusion' && response["index"] == "1"
+            || ($('#condition').val() == 'HHH') && response["topic"] == 'Conclusion' && response["index"] == "1") {
             var msgs = message.split("[Name]");
-
             message = msgs[0] + $('#userName').val() + msgs[1];
 
         }
@@ -1350,14 +1406,14 @@ $(document).ready(function () {
             localStorage.clear()
         }
 
-        
+
     }
 
     function fillHighConditionContent(response, istriggerEnterKeyEventActive, isTaskCompleted) {
         $('#bot_thinking').remove();
         var message = '';
         var userActionBlock = ''
-        
+
         //if (response['topic'] == 'Clue') {
         //    console.log(response["botResponse"])
         //    var navItems = []
@@ -1395,7 +1451,12 @@ $(document).ready(function () {
             $("#nextButton").show()
             message = response["botResponse"][0];
         }
-        else if (response['topic'] == 'Redundant_Ins' && response['index'] == '2' && response['condition'][1] == 'H') {
+        // else if (response['topic'] == 'Person' && response['index'] == '5' && response['condition'][0] == 'H') {
+        //     triggerEnterKeyEvent = true
+        //     var cls = '.' + message.toLowerCase();
+        //     $(cls).click();
+        // }
+        else if (response['topic'] == 'Redundant_Ins' && response['index'] == '2' && response['condition'][0] == 'H') {
             var navItems = []
             navItems = ["Yes, I would like <br /> to request specific information.", "No, I'm ready to make <br /> my final decisions."]
             userActionBlock = buildUserActionButtonGroup(navItems, response['condition'], 'redundantConfirmation')
@@ -1405,17 +1466,18 @@ $(document).ready(function () {
             $("#nextButton").hide()
             istriggerEnterKeyEventActive = false
         }
+
         else if ((response['topic'] == 'Redundant_Ins' && response['index'] == '3' && response['condition'][1] == 'H')) {
             sessionDictData = redundantDictData();
-            //console.log(sessionDictData)
             message = response["botResponse"][0]
             triggerEnterKeyEvent = true
             $("#nextButton").attr("disabled", false);
             $("#nextButton").show()
         }
-        else if (response['topic'] == 'Redundant_Ins' && response['index'] == '3') {
+
+        else if (response['topic'] == 'Redundant_Ins' && response['index'] == '3'&& response['condition'][0] == 'N') {
             var navItems = []
-            navItems = ["Yes, I would like <br /> to request specific information.", "No, I'm ready to make <br /> my final decisions."]            
+            navItems = ["Yes, I would like <br /> to request specific information.", "No, I'm ready to make <br /> my final decisions."]
             userActionBlock = buildUserActionButtonGroup(navItems, response['condition'], 'redundantConfirmation')
             message = response["botResponse"][0]
             triggerEnterKeyEvent = false
@@ -1434,42 +1496,42 @@ $(document).ready(function () {
         else if (response['topic'] == 'Redundant') {
             //redundantBlock(response['condition'])
         }
-        
+
         else {
             message = response["botResponse"][0];
         }
         if (response['topic'] == 'Clue') {
-            
+
             var seconds = new Date().getTime() / 1000;
             $('#timeTaken').val(seconds);
         }
 
         if (response['topic'] == 'Clue' && response['index'] == "1") {
-            
+
             $('#infoClueButton').show()
             var seconds = new Date().getTime() / 1000;
             $('#clueStartTimestamp').val(seconds);
         }
 
-        if (response['topic'] == 'Submit' && response['index'] == "2" && response['condition'] == ("HHHC" || "NHHC")) {
-            message = message + '<br/><br/>'
-            addMessage('bot', response["condition"], message);
-            message = getMatrixHtml_hc()
-            print("surya manthena1")
-        }
-
-        if (response['topic'] == 'Submit' && response['index'] == "2" && response['condition'] == ("HHLC" || "NHLC")) {
-            message = message + '<br/><br/>'
-            addMessage('bot', response["condition"], message);
-            message = getMatrixHtml_lc()
-            print("surya manthena1")
-        }
-
-        if (response['topic'] == 'Submit' && response['index'] == "2") {
+        if (response['topic'] == 'Submit' && response['index'] == "2" && (response['condition'] == "HHHC" || response['condition'] =="NHHC")) {
             message = message + '<br/><br/>'
             addMessage('bot', response["condition"], message);
             message = getMatrixHtml()
-            print("surya manthena1")
+
+        }
+
+        if (response['topic'] == 'Submit' && response['index'] == "2" && (response['condition'] == "HHLC" || response['condition'] =="NHLC")) {
+            message = message + '<br/><br/>'
+            addMessage('bot', response["condition"], message);
+            message = getMatrixHtml_lc()
+
+        }
+
+        if (response['topic'] == 'Submit' && response['index'] == "2" && response['condition'] == ("HHH" || "HLH" || "LHH" || "LLH")) {
+            message = message + '<br/><br/>'
+            addMessage('bot', response["condition"], message);
+            message = getMatrixHtml()
+
         }
 
         if (response['topic'] == 'Submit' && response['index'] == "3") {
@@ -1491,7 +1553,7 @@ $(document).ready(function () {
 
 
 
-        if (($('#condition').val() == 'HHL' || $('#condition').val() == 'HHH'|| $('#condition').val() == 'HHHC' ) && response["topic"] == 'Introduction' && response["index"] == "2") {
+        if (($('#condition').val() == 'HHL' || $('#condition').val() == 'HHH'|| $('#condition').val() == 'HHHC' || $('#condition').val() == 'HHLC' || $('#condition').val() == 'NHHC' || $('#condition').val() == 'NHLC' ) && response["topic"] == 'Introduction' && response["index"] == "2") {
             $("#userMessage").show();
             $('#userMessage').focus()
             $('#userInputType').val("name");
@@ -1506,16 +1568,18 @@ $(document).ready(function () {
             $("#userMessage").hide();
             $('#userInputType').val("");
         }
-        else if (($('#condition').val() == 'HHL') && response["topic"] == 'Tutorial' && response["index"] == "13"
-            || ($('#condition').val() == 'HHH') && response["topic"] == 'Tutorial' && response["index"] == "21"
-            || ($('#condition').val() == 'HHL') && response["topic"] == 'Conclusion' && response["index"] == "1"
+        else if (($('#condition').val() == 'HHHC') && response["topic"] == 'Tutorial' && response["index"] == "23" ||
+        ($('#condition').val() == 'HHLC') && response["topic"] == 'Tutorial' && response["index"] == "23" ||
+        ($('#condition').val() == 'HHH') && response["topic"] == 'Tutorial' && response["index"] == "21"
+            || ($('#condition').val() == 'HHHC') && response["topic"] == 'Conclusion' && response["index"] == "1"
+            || ($('#condition').val() == 'HHLC') && response["topic"] == 'Conclusion' && response["index"] == "1"
             || ($('#condition').val() == 'HHH') && response["topic"] == 'Conclusion' && response["index"] == "1") {
             var msgs = message.split("[Name]");
 
             message = msgs[0] + $('#userName').val() + msgs[1];
 
         }
-        
+
         if (response['topic'] == 'Submit' && response['index'] == "2") {
             addMessage('full', response["condition"], message);
         }
@@ -1535,7 +1599,7 @@ $(document).ready(function () {
         if (response['condition'][0] == 'H') {
             addActionBlock(userActionBlock)
         }
-        
+
         if ((response['topic'] == 'Redundant_Ins' && response['index'] == '3' && response['condition'][1]=='H')) {
             redundantBlock(response['condition'])
             $('#topic').val('Redundant')
@@ -1553,7 +1617,7 @@ $(document).ready(function () {
         }
         $("#nextButton").attr("disabled", false);
         if (response['topic'] == 'Clue' || response['topic'] == 'Redundant') {
-            
+
         }
         else {
             if (istriggerEnterKeyEventActive) {
@@ -1645,12 +1709,12 @@ $(document).ready(function () {
                 //    else if (i == 1) {
                 //        html += `<button type="button" class="btn btn-secondary showMatrixGrid" style="font-size:10px">`
                 //    }
-                    
+
                 //}
-                
+
             }
             else if (type == 'redundantConfirmation') {
-                if (i == 0) {
+                if (i == 0) {   
                     html += `<button type="button" class="btn btn-secondary showNextClue" style="font-size:10px">`
                 }
                 else if (i == 1) {
@@ -1692,10 +1756,10 @@ $(document).ready(function () {
                 //        html += `<button type="button" class="btn btn-secondary showMatrixGrid" style="font-size:10px">`
                 //    }
                 //}
-                
+
 
             }
-            
+
             else if (type == 'category') {
                 if (i == 0) {
                     html += `<button type="button" class="btn btn-secondary person" style="font-size:10px">`
@@ -1706,7 +1770,7 @@ $(document).ready(function () {
                 else if (i == 2) {
                     html += `<button type="button" class="btn btn-secondary hours" style="font-size:10px">`
                 }
-                
+
             }
             else if (type == 'person') {
                 if (i == 0) {
@@ -1720,7 +1784,7 @@ $(document).ready(function () {
                 }
                 else if (i == 3) {
                     html += `<button type="button" class="btn btn-secondary tina" style="font-size:10px">`
-                } 
+                }
             }
             else if (type == 'roles') {
                 if (i == 0) {
@@ -1750,7 +1814,7 @@ $(document).ready(function () {
                     html += `<button type="button" class="btn btn-secondary twelve" style="font-size:10px">`
                 }
             }
-            
+
             html += content[i]
             html += `</button></div>`
         }
@@ -1760,7 +1824,7 @@ $(document).ready(function () {
         return html;
     }
 
-    
+
 
     function getMatrixHtml() {
         var html = ` <div id = 'matrixResult' class='table-responsive-sm' style = 'width:130%' >
@@ -2121,7 +2185,7 @@ $(document).ready(function () {
             else {
                 html = "<div id='bot_thinking' class='bot_msg_div'><div class='bot_msg_img'><img src='../static/images/bot3.jpg' alt='Avatar' style='width:100%;'></div><div class='bot_msg_main_div'><div class='bot_msg_inner_div'><div class='ticontainer'><div class='tiblock'><div class='tidot'></div><div class='tidot'></div><div class='tidot'></div></div></div></div></div></div>"
             }
-            
+
         }
         $('#chatDiv').append(html)
         var element = document.getElementById("chatDiv");
@@ -2133,6 +2197,10 @@ $(document).ready(function () {
         if (type == 'user') {
             html = "<div class='user_msg_div'><div class='user_msg_img'><img src='../static/images/user.png' alt='Avatar' style='width:100%;'></div><div class='user_msg_main_div'><p style='word-wrap: break-word'>" + message + "</p></div></div>"
         }
+        else  if (type == 'user-btn') {
+            html = "<div class='user_msg_div'><div class='user_msg_img'><img src='../static/images/user.png' alt='Avatar' style='width:100%;'></div><div class='user_msg_main_div'><p style='word-wrap: break-word'><button type='button' class='btn btn-secondary showNextClue' style='font-size:10px'>" + message + "</button></p></div></div>"
+        
+        }
         else if (type == 'bot') {
             if (condition[1] == 'H') {
                 html = "<div class='bot_msg_div'><div class='bot_msg_img'><img src='../static/images/pic1.jpg' alt='Avatar' style='width:100%;border-radius: 70%;'></div><div class='bot_msg_main_div'><div class='bot_msg_inner_div'><p style='word-wrap: break-word;background: #f0ecda'>" + message + "</p></div></div></div>"
@@ -2140,7 +2208,7 @@ $(document).ready(function () {
             else {
                 html = "<div class='bot_msg_div'><div class='bot_msg_img'><img src='../static/images/bot3.jpg' alt='Avatar' style='width:100%;'></div><div class='bot_msg_main_div'><div class='bot_msg_inner_div'><p style='word-wrap: break-word;background: #f0ecda'>" + message + "</p></div></div></div>"
             }
-            
+
         }
         else {
             if (condition[1] == 'H') {
@@ -2154,13 +2222,22 @@ $(document).ready(function () {
         var element = document.getElementById("chatDiv");
         element.scrollTop = element.scrollHeight;
     }
+    function addInteractiveMessage(type,classTag,message) {
+        var html = '';
+         if (type == 'user-btn') {
+            html = "<div class='user_msg_div'><div class='user_msg_img'><img src='../static/images/user.png' alt='Avatar' style='width:100%;'></div><div class='user_msg_main_div'><div class='submit_msg_inner_div'><p style='word-wrap: break-word'><button type='button' class='btn btn-secondary "+classTag+"' style='font-size:10px'>" + message + "</button></p></div></div></div>"
+        }
 
+        $('#chatDiv').append(html)
+        var element = document.getElementById("chatDiv");
+        element.scrollTop = element.scrollHeight;
+    }
     function addActionBlock(content) {
         $('#chatDiv').append(content)
         var element = document.getElementById("chatDiv");
         element.scrollTop = element.scrollHeight;
 
-       
+
     }
 
     //To check if dict is empty
@@ -2192,7 +2269,7 @@ $(document).ready(function () {
                     "role": role,
                     "projectHours": projectHours
                 }
-                
+
             }
             //console.log(isValid)
             if (isValid) {
@@ -2246,7 +2323,7 @@ $(document).ready(function () {
                     }
                 });
 
-                
+
 
                 ////console.log(result)
                 $("#submitButton").hide();
@@ -2264,7 +2341,7 @@ $(document).ready(function () {
             var col = $(this).parent().children().index($(this));
             var row = $(this).parent().parent().children().index($(this).parent());
             var className = "empty";
-            
+
             //if((col > 1 && row > 1)){
             if ($(this).hasClass('click')) {
                 if ($(this).hasClass('cross')) {
@@ -2300,7 +2377,7 @@ $(document).ready(function () {
                 //}
             }
             ////console.log(col, row, className)
-            
+
         });
     }
 });
